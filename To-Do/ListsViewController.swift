@@ -142,12 +142,16 @@ class MasterViewController: UITableViewController, UITextFieldDelegate {
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         
-        //let addAction = newListAlert.actions.first
+        let newListAlert = self.presentedViewController as! UIAlertController
+        let addAction = newListAlert.actions.first
         
-        // Enable or Disable the "Add" button
-        //addAction?.isEnabled = (textField.text?.characters.count)! > 0
+        if ((range.location == 0 && range.length == 0) || (range.location == 1 && range.length == 1)) {
+            addAction?.isEnabled = true
+        }else{
+            addAction?.isEnabled = false
+        }
         
-        return true
+        return true;
     }
 
 
