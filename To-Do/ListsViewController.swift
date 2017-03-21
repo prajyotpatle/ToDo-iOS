@@ -1,5 +1,5 @@
 //
-//  MasterViewController.swift
+//  ListsViewController.swift
 //  To-Do
 //
 //  Created by Prajyot on 20/03/2017.
@@ -7,28 +7,46 @@
 //
 
 import UIKit
+import RealmSwift
 
-class MasterViewController: UITableViewController, UITextFieldDelegate {
+class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchResultsUpdating {
 
-    var detailViewController: DetailViewController? = nil
+    var detailViewController: TasksViewController? = nil
     var objects = [String]()
+    let realm = try! Realm()
+    lazy var lists: Results<List> = { self.realm.objects(List.self) }()
+    lazy var tasks: Results<Task> = { self.realm.objects(Task.self) }()
+    let searchController = UISearchController(searchResultsController: nil)
+    var filteredLists : Results<List>!
 
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         self.navigationItem.leftBarButtonItem = self.editButtonItem
+        
+        lists = self.realm.objects(List.self)
+        
+        searchController.searchResultsUpdater = self
+        searchController.dimsBackgroundDuringPresentation = false
+        definesPresentationContext = true
+        tableView.tableHeaderView = searchController.searchBar
 
-        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewObject(_:)))
+        let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewList(_:)))
         self.navigationItem.rightBarButtonItem = addButton
         if let split = self.splitViewController {
             let controllers = split.viewControllers
-            self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? DetailViewController
+            self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? TasksViewController
         }
     }
 
     override func viewWillAppear(_ animated: Bool) {
         self.clearsSelectionOnViewWillAppear = self.splitViewController!.isCollapsed
+        
+        if let selectedIndexPath = tableView.indexPathForSelectedRow {
+            tableView.reloadRows(at: [selectedIndexPath], with: .automatic)
+        }
+        
         super.viewWillAppear(animated)
     }
 
@@ -37,7 +55,7 @@ class MasterViewController: UITableViewController, UITextFieldDelegate {
         // Dispose of any resources that can be recreated.
     }
 
-    func insertNewObject(_ sender: Any) {
+    func insertNewList(_ sender: Any) {
         
         // Show a alertController asking the new list's name
         let newListAlert = UIAlertController(title: "Add New To-Do List", message: "Enter the name of the list", preferredStyle: .alert)
@@ -56,8 +74,14 @@ class MasterViewController: UITableViewController, UITextFieldDelegate {
             
             let nameTextField = newListAlert.textFields?.first
             
-            self.objects.insert((nameTextField?.text)!, at: 0)
-            let indexPath = IndexPath(row: 0, section: 0)
+            let indexPath = IndexPath(row: self.tableView.numberOfRows(inSection: 0), section: 0)
+            
+            
+            let newList = List()
+            newList.name = (nameTextField?.text)!
+            self.realm.beginWrite()
+            self.realm.add(newList)
+            try! self.realm.commitWrite()
             self.tableView.insertRows(at: [indexPath], with: .automatic)
             
         }))
@@ -66,21 +90,38 @@ class MasterViewController: UITableViewController, UITextFieldDelegate {
         newListAlert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
         
         // Keep the "Add" button disabled at first
-        newListAlert.actions.first?.isEnabled = false
+        //newListAlert.actions.first?.isEnabled = false
         
         // Show the alert
         present(newListAlert, animated: true, completion: nil)
         
     }
+    
+    
+    func tasksForList(_ list: List) -> Results<Task> {
+        
+        return tasks.filter("list.dateCreated == %@ AND isCompleted == false", list.dateCreated)
+        
+    }
+    
 
     // MARK: - Segues
 
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "showDetail" {
             if let indexPath = self.tableView.indexPathForSelectedRow {
-                let object = objects[indexPath.row]
-                let controller = (segue.destination as! UINavigationController).topViewController as! DetailViewController
-                controller.detailItem = object
+                
+                // Get the selected List
+                let list : List
+                if searchController.isActive && searchController.searchBar.text != "" {
+                    list = filteredLists[indexPath.row]
+                } else {
+                    list = lists[indexPath.row]
+                }
+                
+                // Pass it to the TasksViewController
+                let controller = (segue.destination as! UINavigationController).topViewController as! TasksViewController
+                controller.list = list
                 controller.navigationItem.leftBarButtonItem = self.splitViewController?.displayModeButtonItem
                 controller.navigationItem.leftItemsSupplementBackButton = true
             }
@@ -94,38 +135,41 @@ class MasterViewController: UITableViewController, UITextFieldDelegate {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return objects.count
+        if searchController.isActive && searchController.searchBar.text != "" {
+            return filteredLists.count
+        }
+        
+        return lists.count
     }
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell", for: indexPath)
-
-        let object = objects[indexPath.row]
-        cell.textLabel!.text = object
+        
+        let list : List
+        if searchController.isActive && searchController.searchBar.text != "" {
+            list = filteredLists[indexPath.row]
+        } else {
+            list = lists[indexPath.row]
+        }
+    
+        cell.textLabel?.text = list.name
+        cell.detailTextLabel?.text = String(format: "%d", tasksForList(list).count)
         return cell
+        
     }
     
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
-            objects.remove(at: indexPath.row)
+            let list = lists[indexPath.row]
+            self.realm.beginWrite()
+            self.realm.delete(list)
+            try! self.realm.commitWrite()
             tableView.deleteRows(at: [indexPath], with: .fade)
         } else if editingStyle == .insert {
             // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view.
         }
     }
-    
-    override func tableView(_ tableView: UITableView, moveRowAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        
-        // Get the source and destination Indexes
-        let sourceIndex = sourceIndexPath.row
-        let destinationIndex = destinationIndexPath.row
-        
-        /* Remove the object from its source index and
-         insert it at destination index */
-        let sourceObject = objects.remove(at: sourceIndex)
-        objects.insert(sourceObject, at: destinationIndex)
-        
-    }
+
     
     // MARK:- Table View Delegate
 
@@ -134,26 +178,33 @@ class MasterViewController: UITableViewController, UITextFieldDelegate {
         return true
     }
     
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        return true
-    }
     
     // MARK:- Text Field Delegate
     
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         
-        let newListAlert = self.presentedViewController as! UIAlertController
-        let addAction = newListAlert.actions.first
-        
-        if ((range.location == 0 && range.length == 0) || (range.location == 1 && range.length == 1)) {
-            addAction?.isEnabled = true
-        }else{
-            addAction?.isEnabled = false
-        }
+//        let newListAlert = self.presentedViewController as! UIAlertController
+//        let addAction = newListAlert.actions.first
+//        
+//        if ((range.location == 0 && range.length == 0) || (range.location == 1 && range.length == 1)) {
+//            addAction?.isEnabled = true
+//        }else{
+//            addAction?.isEnabled = false
+//        }
         
         return true;
     }
-
+    
+    
+    func filterContentForSearchText(searchText: String, scope: String = "All") {
+        filteredLists = self.lists.filter("name CONTAINS[c] %@", searchText)
+        
+        tableView.reloadData()
+    }
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        filterContentForSearchText(searchText: searchController.searchBar.text!)
+    }
 
 }
 
