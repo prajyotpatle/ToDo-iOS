@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchResultsUpdating {
+class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchResultsUpdating, UIPickerViewDataSource, UIPickerViewDelegate {
 
     var detailViewController: TasksViewController? = nil
     var objects = [String]()
@@ -18,22 +18,31 @@ class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchR
     lazy var tasks: Results<Task> = { self.realm.objects(Task.self) }()
     let searchController = UISearchController(searchResultsController: nil)
     var filteredLists : Results<List>!
+    var selectedPriority = "Low"
+    var sortedLists: Results<List> {
+        get {
+            return lists.sorted(byKeyPath: <#T##String#>, ascending: <#T##Bool#>)
+        }
+    }
 
+    
+    // MARK:- ViewController Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         self.navigationItem.leftBarButtonItem = self.editButtonItem
         
-        lists = self.realm.objects(List.self)
-        
+        // Add a searchController
         searchController.searchResultsUpdater = self
         searchController.dimsBackgroundDuringPresentation = false
         definesPresentationContext = true
         tableView.tableHeaderView = searchController.searchBar
 
         let addButton = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(insertNewList(_:)))
-        self.navigationItem.rightBarButtonItem = addButton
+        let sortButton = UIBarButtonItem(image: UIImage.init(named: "sort"), style: .plain, target: self, action: #selector(showSortOptions(_:)))
+        
+        self.navigationItem.rightBarButtonItems = [sortButton, addButton]
         if let split = self.splitViewController {
             let controllers = split.viewControllers
             self.detailViewController = (controllers[controllers.count-1] as! UINavigationController).topViewController as? TasksViewController
@@ -50,10 +59,8 @@ class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchR
         super.viewWillAppear(animated)
     }
 
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
-    }
+    
+    // MARK:- Actions
 
     func insertNewList(_ sender: Any) {
         
@@ -69,6 +76,30 @@ class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchR
             nameTextFiled.delegate = self
         }
         
+        // Add a textField to enter the priority
+        newListAlert.addTextField { (nameTextFiled) in
+            // Configure the textFiled
+            nameTextFiled.placeholder = "priority"
+            nameTextFiled.text = "Low"
+            nameTextFiled.clearButtonMode = .whileEditing
+            nameTextFiled.borderStyle = .roundedRect
+            nameTextFiled.delegate = self
+            
+            // Create a pickerView
+            let priorityPicker = UIPickerView()
+            priorityPicker.dataSource = self
+            priorityPicker.delegate = self
+            
+            // Create a toolbar
+            let toolbar = UIToolbar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.size.width, height: 44))
+            let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+            let doneButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.prioritySelected(_:)))
+            toolbar.items = [flexibleSpace, doneButton]
+            
+            nameTextFiled.inputView = priorityPicker
+            nameTextFiled.inputAccessoryView = toolbar
+        }
+        
         // Add an "Add" button
         newListAlert.addAction(UIAlertAction(title: "Add", style: .default, handler: { (addAlertAction) in
             
@@ -79,6 +110,7 @@ class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchR
             
             let newList = List()
             newList.name = (nameTextField?.text)!
+            newList.priority = self.selectedPriority
             self.realm.beginWrite()
             self.realm.add(newList)
             try! self.realm.commitWrite()
@@ -97,12 +129,23 @@ class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchR
         
     }
     
-    
-    func tasksForList(_ list: List) -> Results<Task> {
+    func prioritySelected(_ sender: Any) {
         
-        return tasks.filter("list.dateCreated == %@ AND isCompleted == false", list.dateCreated)
+        let newListAlert = self.presentedViewController as! UIAlertController
+        let priorityTextFieled = newListAlert.textFields?.last
+        priorityTextFieled?.text = selectedPriority;
+        priorityTextFieled?.resignFirstResponder()
         
     }
+    
+    func showSortOptions(_ sender: Any) {
+        
+        let actionSheet = UIAlertController(title: "Sort By", message: nil, preferredStyle: .actionSheet)
+        
+        
+        
+    }
+    
     
 
     // MARK: - Segues
@@ -196,11 +239,63 @@ class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchR
     }
     
     
+    // MARK:- Picker View Datasource
+    
+    func numberOfComponents(in pickerView: UIPickerView) -> Int {
+        return 1
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return 3
+    }
+    
+    func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
+        switch row {
+            case 0:
+                return "Low"
+            case 1:
+                return "Medium"
+            case 2:
+                return "High"
+            default:
+                return ""
+        }
+    }
+    
+    
+    
+    // MARK:- Picker View Delegate
+    
+    func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        switch row {
+        case 0:
+            selectedPriority = "Low"
+        case 1:
+            selectedPriority = "Medium"
+        case 2:
+            selectedPriority = "High"
+        default: break
+            
+        }
+    }
+    
+    
+    // MARK:- Helpers
+    
     func filterContentForSearchText(searchText: String, scope: String = "All") {
         filteredLists = self.lists.filter("name CONTAINS[c] %@", searchText)
         
         tableView.reloadData()
     }
+    
+    func tasksForList(_ list: List) -> Results<Task> {
+        
+        return tasks.filter("list.dateCreated == %@ AND isCompleted == false", list.dateCreated)
+        
+    }
+    
+    
+    // MARK:- UISearchUpdatingDelgate
     
     func updateSearchResults(for searchController: UISearchController) {
         filterContentForSearchText(searchText: searchController.searchBar.text!)

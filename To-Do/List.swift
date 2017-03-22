@@ -13,5 +13,6 @@ class List: Object {
     
     dynamic var name = ""
     dynamic var dateCreated = Date()
+    dynamic var priority = "Low"
     
 }
