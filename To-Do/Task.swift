@@ -14,7 +14,10 @@ class Task: Object {
     dynamic var name = ""
     dynamic var dateCreated = Date()
     dynamic var isCompleted = false
-    dynamic var priority = "Low"
+    
+    // 1 = Low, 2 = Medium, 3 = High
+    dynamic var priority = 1
+    
     dynamic var list: List!
     
 }
