@@ -77,6 +77,9 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UIPic
     
     func insertNewTask(_ sender: Any) {
         
+        // Set the default priority to low
+        selectedPriority = 1
+        
         // Show a alertController asking the new task's name
         let newTaskAlert = UIAlertController(title: "Add New Task", message: "Enter the name of the task", preferredStyle: .alert)
         
@@ -93,7 +96,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UIPic
         newTaskAlert.addTextField { (nameTextFiled) in
             // Configure the textFiled
             nameTextFiled.placeholder = "Priority"
-            nameTextFiled.text = "Low"
+            //nameTextFiled.text = "Low"
             nameTextFiled.borderStyle = .roundedRect
             
             // Create a pickerView

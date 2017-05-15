@@ -86,6 +86,9 @@ class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchR
 
     func insertNewList(_ sender: Any) {
         
+        // Set the default priority to low
+        selectedPriority = 1
+        
         // Show a alertController asking the new list's name
         let newListAlert = UIAlertController(title: "Add New To-Do List", message: "Enter the name of the list", preferredStyle: .alert)
         
@@ -102,7 +105,7 @@ class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchR
         newListAlert.addTextField { (priorityTextField) in
             // Configure the textFiled
             priorityTextField.placeholder = "Priority"
-            priorityTextField.text = "Low"
+            //priorityTextField.text = "Low"
             priorityTextField.borderStyle = .roundedRect
             priorityTextField.delegate = self
             
