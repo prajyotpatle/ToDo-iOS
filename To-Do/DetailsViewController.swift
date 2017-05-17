@@ -14,15 +14,23 @@ enum Type {
     case TypeTask
 }
 
-class ListDetailsViewController: UIViewController, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
+class DetailsViewController: UIViewController, UITextFieldDelegate, UIPickerViewDelegate, UIPickerViewDataSource {
     
     @IBOutlet weak var textFieldPriority: UITextField!
     @IBOutlet weak var textFieldName: UITextField!
     var type : Type!
     
     let realm = try! Realm()
-    var list : List?
-    var task : Task?
+    var list : List? {
+        didSet {
+            selectedPriority = (list?.priority)!
+        }
+    }
+    var task : Task? {
+        didSet {
+            selectedPriority = (task?.priority)!
+        }
+    }
     var isEditable = false
     var selectedPriority = 1
     
@@ -198,6 +206,15 @@ class ListDetailsViewController: UIViewController, UITextFieldDelegate, UIPicker
     }
     
     
+    func textFieldDidBeginEditing(_ textField: UITextField) {
+        
+        if textField == textFieldPriority {
+            selectedPriority = 1
+        }
+        
+    }
+    
+    
     // MARK:- Picker View Datasource
     
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
@@ -240,5 +257,7 @@ class ListDetailsViewController: UIViewController, UITextFieldDelegate, UIPicker
             
         }
     }
+    
+    
     
 }

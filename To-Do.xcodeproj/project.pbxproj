@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		CCACA7581EC89E18004E0268 /* ListDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCACA7571EC89E18004E0268 /* ListDetailsViewController.swift */; };
+		CCACA7581EC89E18004E0268 /* DetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCACA7571EC89E18004E0268 /* DetailsViewController.swift */; };
 		CCCB53031EC9CEA000397A02 /* ListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCB53021EC9CEA000397A02 /* ListCell.swift */; };
 		CCCB53061EC9E31B00397A02 /* TaskCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCB53051EC9E31B00397A02 /* TaskCell.swift */; };
 		CCCCC09A1E80330E0019AE86 /* List.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCCCC0991E80330E0019AE86 /* List.swift */; };
@@ -25,7 +25,7 @@
 		321A6900106BA67F8AB018C5 /* Pods-To-Do.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-To-Do.debug.xcconfig"; path = "Pods/Target Support Files/Pods-To-Do/Pods-To-Do.debug.xcconfig"; sourceTree = "<group>"; };
 		86B9A791285F0C2C013A5ABC /* Pods-To-Do.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-To-Do.release.xcconfig"; path = "Pods/Target Support Files/Pods-To-Do/Pods-To-Do.release.xcconfig"; sourceTree = "<group>"; };
 		89B7070197D9D4A90B074AA8 /* Pods_To_Do.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_To_Do.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		CCACA7571EC89E18004E0268 /* ListDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListDetailsViewController.swift; sourceTree = "<group>"; };
+		CCACA7571EC89E18004E0268 /* DetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailsViewController.swift; sourceTree = "<group>"; };
 		CCCB53021EC9CEA000397A02 /* ListCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ListCell.swift; sourceTree = "<group>"; };
 		CCCB53051EC9E31B00397A02 /* TaskCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TaskCell.swift; sourceTree = "<group>"; };
 		CCCCC0991E80330E0019AE86 /* List.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = List.swift; sourceTree = "<group>"; };
@@ -82,7 +82,7 @@
 			isa = PBXGroup;
 			children = (
 				F05D02491E7FA5C1009DCE58 /* ListsViewController.swift */,
-				CCACA7571EC89E18004E0268 /* ListDetailsViewController.swift */,
+				CCACA7571EC89E18004E0268 /* DetailsViewController.swift */,
 				F05D024B1E7FA5C1009DCE58 /* TasksViewController.swift */,
 			);
 			name = Controllers;
@@ -258,7 +258,7 @@
 				CCCCC09A1E80330E0019AE86 /* List.swift in Sources */,
 				CCCCC09C1E8034010019AE86 /* Task.swift in Sources */,
 				CCCB53061EC9E31B00397A02 /* TaskCell.swift in Sources */,
-				CCACA7581EC89E18004E0268 /* ListDetailsViewController.swift in Sources */,
+				CCACA7581EC89E18004E0268 /* DetailsViewController.swift in Sources */,
 				F05D024A1E7FA5C1009DCE58 /* ListsViewController.swift in Sources */,
 				F05D02481E7FA5C1009DCE58 /* AppDelegate.swift in Sources */,
 			);

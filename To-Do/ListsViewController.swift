@@ -300,7 +300,7 @@ class ListsViewController: UITableViewController, UITextFieldDelegate, UISearchR
             let selectedIndexPath = sender as! IndexPath
             
             // Take the list details view cotroller
-            let listDetailsViewController = (segue.destination as! UINavigationController).topViewController as! ListDetailsViewController
+            let listDetailsViewController = (segue.destination as! UINavigationController).topViewController as! DetailsViewController
             
             // Set the type
             listDetailsViewController.type = .TypeList

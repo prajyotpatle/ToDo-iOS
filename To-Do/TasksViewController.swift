@@ -446,7 +446,7 @@ class TasksViewController: UITableViewController, UISearchResultsUpdating, UIPic
             let selectedIndexPath = sender as! IndexPath
             
             // Take the list details view cotroller
-            let taskDetailsViewController = (segue.destination as! UINavigationController).topViewController as! ListDetailsViewController
+            let taskDetailsViewController = (segue.destination as! UINavigationController).topViewController as! DetailsViewController
             
             // Set the type
             taskDetailsViewController.type = .TypeTask
